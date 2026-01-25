@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบหลังบ้าน - แอดมินป๊อกเด้ง</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Kanit', sans-serif; background: #1e293b; color: #cbd5e1; }</style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <div class="w-64 bg-slate-900 p-5 flex flex-col">
+        <h1 class="text-2xl font-bold text-yellow-500 mb-10">👑 Admin Panel</h1>
+        <nav class="flex-1 space-y-2">
+            <button onclick="showTab('users')" class="w-full text-left p-3 rounded hover:bg-slate-800">👥 จัดการสมาชิก</button>
+            <button onclick="showTab('finance')" class="w-full text-left p-3 rounded hover:bg-slate-800">💰 รายการฝาก-ถอน</button>
+            <button onclick="showTab('settings')" class="w-full text-left p-3 rounded hover:bg-slate-800">⚙️ ตั้งค่าระบบ</button>
+        </nav>
+        <div class="mt-auto text-xs text-slate-500">Status: Online</div>
+    </div>
+
+    <div class="flex-1 p-8 overflow-y-auto">
+        
+        <div id="tab-users" class="space-y-6">
+            <h2 class="text-3xl font-bold text-white mb-6">จัดการสมาชิก / ล็อคผล</h2>
+            <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-700 text-white">
+                        <tr>
+                            <th class="p-4">Email</th>
+                            <th class="p-4">เงินในกระเป๋า</th>
+                            <th class="p-4 text-center">สถานะดวง (Lock)</th>
+                            <th class="p-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-finance" class="hidden space-y-6">
+            <h2 class="text-3xl font-bold text-white mb-6">รายการรออนุมัติ</h2>
+            <div id="txn-list" class="grid gap-4">
+                </div>
+        </div>
+
+        <div id="tab-settings" class="hidden space-y-6 max-w-xl">
+            <h2 class="text-3xl font-bold text-white mb-6">ตั้งค่าเว็บ</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block mb-2">ข้อความประกาศ (วิ่งหน้าเว็บ)</label>
+                    <input type="text" id="sys-announce" class="w-full bg-slate-700 p-3 rounded text-white">
+                </div>
+                <div>
+                    <label class="block mb-2">ลิงก์ติดต่อ (Line/FB)</label>
+                    <input type="text" id="sys-contact" class="w-full bg-slate-700 p-3 rounded text-white">
+                </div>
+                <div>
+                    <label class="block mb-2">ข้อมูลบัญชีธนาคาร (ที่โชว์ให้ลูกค้าโอน)</label>
+                    <textarea id="sys-bank" class="w-full bg-slate-700 p-3 rounded text-white h-24"></textarea>
+                </div>
+                <button onclick="saveSettings()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded font-bold">บันทึกการตั้งค่า</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="edit-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50">
+        <div class="bg-slate-800 p-6 rounded-lg w-96">
+            <h3 class="text-xl font-bold text-white mb-4">แก้ไข: <span id="edit-email" class="text-yellow-400"></span></h3>
+            <input type="hidden" id="edit-uid">
+            
+            <label class="block mb-1">ปรับยอดเงิน</label>
+            <input type="number" id="edit-balance" class="w-full bg-slate-900 p-2 rounded text-white mb-4">
+            
+            <label class="block mb-1 text-red-400 font-bold">🔒 ล็อคผลการเล่น</label>
+            <select id="edit-lock" class="w-full bg-slate-900 p-2 rounded text-white mb-6">
+                <option value="normal">ดวงปกติ (สุ่ม)</option>
+                <option value="win">บังคับชนะ (ผู้เล่นป๊อก)</option>
+                <option value="lose">บังคับแพ้ (เจ้ากินเรียบ)</option>
+            </select>
+
+            <div class="flex gap-2">
+                <button onclick="saveUserEdit()" class="flex-1 bg-green-600 py-2 rounded text-white">บันทึก</button>
+                <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="flex-1 bg-slate-600 py-2 rounded text-white">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyABuBrdprpiN32ZD4cSCiSslkYbRfnWGgE",
+            authDomain: "namba-fe57a.firebaseapp.com",
+            databaseURL: "https://namba-fe57a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "namba-fe57a",
+            storageBucket: "namba-fe57a.firebasestorage.app",
+            messagingSenderId: "340416568750",
+            appId: "1:340416568750:web:bb0a58ee618978bc107c3f",
+            measurementId: "G-2L2DNXMJ41"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // --- TABS ---
+        function showTab(id) {
+            ['users','finance','settings'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+            document.getElementById('tab-'+id).classList.remove('hidden');
+        }
+
+        // --- USERS MANAGEMENT ---
+        db.ref('users').on('value', snap => {
+            const list = document.getElementById('user-list');
+            list.innerHTML = '';
+            snap.forEach(child => {
+                const u = child.val();
+                const uid = child.key;
+                const lockColor = u.lock_result === 'win' ? 'text-green-400' : (u.lock_result === 'lose' ? 'text-red-400' : 'text-slate-500');
+                
+                list.innerHTML += `
+                    <tr class="border-b border-slate-700 hover:bg-slate-750">
+                        <td class="p-4">${u.email}</td>
+                        <td class="p-4 font-bold text-yellow-400">฿${u.balance}</td>
+                        <td class="p-4 text-center font-bold uppercase ${lockColor}">${u.lock_result}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="openEdit('${uid}', '${u.email}', ${u.balance}, '${u.lock_result}')" class="bg-blue-600 px-3 py-1 rounded text-white text-sm hover:bg-blue-500">จัดการ</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+
+        function openEdit(uid, email, bal, lock) {
+            document.getElementById('edit-uid').value = uid;
+            document.getElementById('edit-email').innerText = email;
+            document.getElementById('edit-balance').value = bal;
+            document.getElementById('edit-lock').value = lock;
+            document.getElementById('edit-modal').classList.remove('hidden');
+            document.getElementById('edit-modal').classList.add('flex');
+        }
+
+        function saveUserEdit() {
+            const uid = document.getElementById('edit-uid').value;
+            db.ref('users/' + uid).update({
+                balance: parseInt(document.getElementById('edit-balance').value),
+                lock_result: document.getElementById('edit-lock').value
+            });
+            document.getElementById('edit-modal').classList.add('hidden');
+            document.getElementById('edit-modal').classList.remove('flex');
+        }
+
+        // --- FINANCE ---
+        db.ref('transactions').orderByChild('status').equalTo('pending').on('value', snap => {
+            const list = document.getElementById('txn-list');
+            list.innerHTML = '';
+            if(!snap.exists()) {
+                list.innerHTML = '<div class="text-slate-500">ไม่มีรายการรอตรวจสอบ</div>';
+                return;
+            }
+            snap.forEach(child => {
+                const t = child.val();
+                const key = child.key;
+                const isDep = t.type === 'deposit';
+                
+                list.innerHTML += `
+                    <div class="bg-slate-800 p-4 rounded-lg flex justify-between items-center shadow border-l-4 ${isDep ? 'border-green-500' : 'border-red-500'}">
+                        <div>
+                            <div class="font-bold text-white text-lg">${isDep ? 'ฝากเงิน' : 'ถอนเงิน'} ฿${t.amount}</div>
+                            <div class="text-sm text-slate-400">${t.email} | ${t.details}</div>
+                            <div class="text-xs text-slate-500">${new Date(t.timestamp).toLocaleString()}</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="approveTxn('${key}', '${t.uid}', ${t.amount}, '${t.type}')" class="bg-green-600 px-4 py-2 rounded hover:bg-green-500">อนุมัติ</button>
+                            <button onclick="rejectTxn('${key}', '${t.uid}', ${t.amount}, '${t.type}')" class="bg-red-600 px-4 py-2 rounded hover:bg-red-500">ไม่อนุมัติ</button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        function approveTxn(key, uid, amount, type) {
+            if(confirm('ยืนยันอนุมัติ?')) {
+                if(type === 'deposit') {
+                    // Get current balance and add
+                    db.ref('users/' + uid + '/balance').transaction(current => (current || 0) + amount);
+                }
+                // Update status
+                db.ref('transactions/' + key).update({ status: 'approved' });
+            }
+        }
+
+        function rejectTxn(key, uid, amount, type) {
+            if(confirm('ปฏิเสธรายการ?')) {
+                if(type === 'withdraw') {
+                    // Refund money back to user
+                    db.ref('users/' + uid + '/balance').transaction(current => (current || 0) + amount);
+                }
+                db.ref('transactions/' + key).update({ status: 'rejected' });
+            }
+        }
+
+        // --- SETTINGS ---
+        // Load initial
+        db.ref('system').once('value', snap => {
+            const s = snap.val() || {};
+            document.getElementById('sys-announce').value = s.announcement || '';
+            document.getElementById('sys-contact').value = s.contact_line || '';
+            document.getElementById('sys-bank').value = s.bank_info || '';
+        });
+
+        function saveSettings() {
+            db.ref('system').set({
+                announcement: document.getElementById('sys-announce').value,
+                contact_line: document.getElementById('sys-contact').value,
+                bank_info: document.getElementById('sys-bank').value
+            });
+            alert('บันทึกเรียบร้อย');
+        }
+
+    </script>
+</body>
+</html>
