@@ -2,96 +2,174 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Wheel Admin Manager</title>
+    <title>Golden Admin System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
     <style>body{font-family:'Kanit',sans-serif; background:#f3f4f6;}</style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body class="flex h-screen overflow-hidden text-gray-800">
 
     <div id="login-wall" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
-        <h2 class="text-xl font-bold mb-2">Admin Access</h2>
-        <input id="a-email" type="email" value="gaga@gmail.com" class="border p-2 rounded mb-2 w-64">
-        <input id="a-pass" type="password" placeholder="Password" class="border p-2 rounded mb-4 w-64">
-        <button onclick="doLogin()" class="bg-black text-white px-6 py-2 rounded">Login</button>
+        <h2 class="text-2xl font-bold mb-4 text-indigo-900">ADMIN ACCESS ONLY</h2>
+        <div class="w-80 space-y-3">
+            <input id="a-email" type="email" value="gaga@gmail.com" class="w-full border p-3 rounded bg-gray-50" readonly>
+            <input id="a-pass" type="password" placeholder="Password" class="w-full border p-3 rounded">
+            <button onclick="doLogin()" class="w-full bg-indigo-900 text-white py-3 rounded font-bold">เข้าสู่ระบบ</button>
+        </div>
     </div>
 
-    <aside class="w-64 bg-white border-r flex flex-col hidden md:flex">
-        <div class="p-6 font-bold text-xl text-indigo-700">WHEEL MASTER</div>
-        <nav class="p-4 space-y-1">
-            <button onclick="tab('wheels')" class="w-full text-left p-3 rounded hover:bg-gray-100 font-bold">🎡 จัดการวงล้อ</button>
-            <button onclick="tab('finance')" class="w-full text-left p-3 rounded hover:bg-gray-100">💰 รายการฝากถอน</button>
-            <button onclick="tab('system')" class="w-full text-left p-3 rounded hover:bg-gray-100">⚙️ ตั้งค่าระบบ</button>
+    <aside class="w-64 bg-white border-r flex flex-col shadow-lg z-10">
+        <div class="p-6 font-bold text-2xl text-indigo-800 flex items-center gap-2">
+            <span>⚙️</span> BACKEND
+        </div>
+        <nav class="flex-1 p-4 space-y-1">
+            <button onclick="tab('dash')" class="nav-btn w-full text-left p-3 rounded hover:bg-indigo-50 font-medium text-gray-600">📊 ภาพรวม</button>
+            <button onclick="tab('wheels')" class="nav-btn w-full text-left p-3 rounded hover:bg-indigo-50 font-medium text-gray-600">🎡 จัดการวงล้อ</button>
+            <button onclick="tab('finance')" class="nav-btn w-full text-left p-3 rounded hover:bg-indigo-50 font-medium text-gray-600">💰 รายการฝาก-ถอน</button>
+            <button onclick="tab('users')" class="nav-btn w-full text-left p-3 rounded hover:bg-indigo-50 font-medium text-gray-600">👥 สมาชิก</button>
+            <button onclick="tab('settings')" class="nav-btn w-full text-left p-3 rounded hover:bg-indigo-50 font-medium text-gray-600">🔧 ตั้งค่าระบบ</button>
         </nav>
+        <div class="p-4 border-t text-xs text-gray-400 text-center">Version 2.0 (Full Option)</div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto p-8">
-        
-        <div id="tab-wheels">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">รายการวงล้อทั้งหมด</h2>
-                <button onclick="openWheelModal()" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">+ สร้างวงล้อใหม่</button>
-            </div>
-            <div id="wheel-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <main class="flex-1 overflow-y-auto p-8 bg-gray-100">
+
+        <div id="tab-dash" class="content-tab">
+            <h2 class="text-3xl font-bold mb-6">ภาพรวมระบบ</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow border-l-4 border-indigo-500">
+                    <div class="text-gray-500">ยอดฝากรออนุมัติ</div>
+                    <div class="text-3xl font-bold text-indigo-700" id="dash-dep">0</div>
                 </div>
+                <div class="bg-white p-6 rounded-xl shadow border-l-4 border-red-500">
+                    <div class="text-gray-500">ยอดถอนรออนุมัติ</div>
+                    <div class="text-3xl font-bold text-red-700" id="dash-wit">0</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
+                    <div class="text-gray-500">สมาชิกทั้งหมด</div>
+                    <div class="text-3xl font-bold text-green-700" id="dash-usr">0</div>
+                </div>
+            </div>
         </div>
 
-        <div id="tab-finance" class="hidden">
-            <h2 class="text-2xl font-bold mb-4">รายการรอดำเนินการ</h2>
-            <div id="txn-list" class="space-y-2"></div>
+        <div id="tab-wheels" class="content-tab hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">ตั้งค่าเกมวงล้อ</h2>
+                <button onclick="openWheelModal()" class="bg-indigo-600 text-white px-6 py-2 rounded shadow hover:bg-indigo-700">+ เพิ่มวงล้อ</button>
+            </div>
+            <div id="wheel-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
         </div>
-        
-        <div id="tab-system" class="hidden">
-            <h2 class="text-2xl font-bold mb-4">ตั้งค่าบัญชีธนาคาร</h2>
-            <textarea id="sys-bank" class="w-full h-32 border p-2 rounded"></textarea>
-            <button onclick="saveBank()" class="mt-2 bg-green-600 text-white px-4 py-2 rounded">บันทึก</button>
+
+        <div id="tab-finance" class="content-tab hidden">
+            <h2 class="text-2xl font-bold mb-6">ธุรกรรมการเงิน (Transactions)</h2>
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-500 text-sm">
+                        <tr>
+                            <th class="p-4">เวลา</th>
+                            <th class="p-4">User</th>
+                            <th class="p-4">ประเภท</th>
+                            <th class="p-4">จำนวน</th>
+                            <th class="p-4">หลักฐาน</th>
+                            <th class="p-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="txn-list" class="divide-y"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-users" class="content-tab hidden">
+            <h2 class="text-2xl font-bold mb-6">รายชื่อสมาชิก</h2>
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-500 text-sm">
+                        <tr>
+                            <th class="p-4">Email</th>
+                            <th class="p-4">UID</th>
+                            <th class="p-4">Balance</th>
+                            <th class="p-4 text-right">Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list" class="divide-y"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-settings" class="content-tab hidden">
+            <h2 class="text-2xl font-bold mb-6">ตั้งค่าทั่วไป</h2>
+            <div class="bg-white p-6 rounded-xl shadow max-w-2xl space-y-4">
+                <div>
+                    <label class="font-bold text-gray-700">ประกาศตัววิ่ง (Marquee)</label>
+                    <input id="sys-msg" class="w-full border p-2 rounded mt-1">
+                </div>
+                <div>
+                    <label class="font-bold text-gray-700">ข้อมูลธนาคาร (สำหรับหน้าฝากเงิน)</label>
+                    <textarea id="sys-bank" class="w-full border p-2 rounded mt-1 h-32"></textarea>
+                </div>
+                <button onclick="saveSys()" class="bg-green-600 text-white px-6 py-2 rounded">บันทึกข้อมูล</button>
+            </div>
         </div>
 
     </main>
 
     <div id="wheel-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl h-[90vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between items-center">
-                <h3 class="font-bold text-lg">ตั้งค่าวงล้อ</h3>
-                <button onclick="closeWheelModal()" class="text-red-500 text-2xl">&times;</button>
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl h-[90vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h3 class="font-bold text-lg">Wheel Editor</h3>
+                <button onclick="closeWheelModal()" class="text-2xl text-gray-400 hover:text-red-500">&times;</button>
             </div>
             
-            <div class="p-6 overflow-y-auto flex-1 space-y-4">
+            <div class="p-6 overflow-y-auto flex-1 space-y-6">
                 <input type="hidden" id="w-id">
+                
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs font-bold text-gray-500">ชื่อวงล้อ</label>
-                        <input type="text" id="w-name" class="w-full border p-2 rounded" placeholder="เช่น วงล้อเศรษฐี">
+                        <label class="block text-sm font-bold mb-1">ชื่อเกม</label>
+                        <input type="text" id="w-name" class="w-full border p-2 rounded" placeholder="เช่น วงล้อมหาเฮง 10บาท">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500">ค่าเล่น (บาท)</label>
-                        <input type="number" id="w-cost" class="w-full border p-2 rounded" value="100">
+                        <label class="block text-sm font-bold mb-1">ราคาต่อรอบ (Cost)</label>
+                        <input type="number" id="w-cost" class="w-full border p-2 rounded" value="10">
                     </div>
                 </div>
 
-                <div class="border-t pt-4">
-                    <div class="flex justify-between mb-2">
-                        <label class="font-bold">ช่องรางวัล (Segments)</label>
-                        <button onclick="addSegment()" class="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">+ เพิ่มช่อง</button>
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block text-sm font-bold">ช่องรางวัล (Segments)</label>
+                        <button onclick="addSeg()" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded hover:bg-indigo-200">+ เพิ่มช่อง</button>
                     </div>
-                    <div class="grid grid-cols-12 gap-2 text-xs text-gray-500 font-bold text-center mb-1">
-                        <div class="col-span-3">ป้าย (Label)</div>
-                        <div class="col-span-2">เงินรางวัล</div>
-                        <div class="col-span-2">สี (Hex)</div>
+                    
+                    <div class="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 mb-2 pl-2">
+                        <div class="col-span-3">ชื่อรางวัล</div>
+                        <div class="col-span-2">มูลค่า (บาท)</div>
+                        <div class="col-span-2">สีพื้นหลัง</div>
                         <div class="col-span-2">โอกาส (Weight)</div>
-                        <div class="col-span-2">แบบ</div>
+                        <div class="col-span-2">ประเภท</div>
                         <div class="col-span-1">ลบ</div>
                     </div>
-                    <div id="seg-list" class="space-y-2">
-                        </div>
-                    <p class="text-xs text-gray-400 mt-2">* Weight ยิ่งเยอะ ยิ่งออกบ่อย (เช่น ช่องเกลือใส่ 100, รางวัลใหญ่ใส่ 1)</p>
+                    <div id="seg-container" class="space-y-2"></div>
+                    <p class="text-xs text-gray-400 mt-2">* Weight: ค่าน้ำหนักความน่าจะเป็น ใส่ 1 (ออกยาก) ใส่ 100 (ออกง่าย)</p>
                 </div>
             </div>
 
-            <div class="p-4 border-t bg-gray-50 flex justify-end gap-2">
-                <button onclick="deleteWheel()" id="btn-del-wheel" class="text-red-600 text-sm px-4 mr-auto hidden">ลบวงล้อนี้</button>
-                <button onclick="closeWheelModal()" class="px-4 py-2 border rounded text-gray-600">ยกเลิก</button>
-                <button onclick="saveWheel()" class="px-6 py-2 bg-black text-white rounded hover:bg-gray-800">บันทึก</button>
+            <div class="p-4 border-t bg-gray-50 flex justify-end gap-2 rounded-b-xl">
+                <button onclick="delWheel()" id="btn-del" class="mr-auto text-red-600 text-sm hidden">ลบเกมนี้ทิ้ง</button>
+                <button onclick="closeWheelModal()" class="px-4 py-2 border rounded">ยกเลิก</button>
+                <button onclick="saveWheel()" class="px-6 py-2 bg-indigo-900 text-white rounded hover:bg-indigo-800">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="user-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded shadow-lg w-80">
+            <h3 class="font-bold mb-4">จัดการเครดิต</h3>
+            <input type="hidden" id="u-uid">
+            <p id="u-email-show" class="mb-2 text-sm text-gray-500"></p>
+            <input type="number" id="u-new-bal" class="w-full border p-2 rounded mb-4" placeholder="ยอดเงินใหม่">
+            <div class="flex gap-2">
+                <button onclick="updateUserBalance()" class="flex-1 bg-green-600 text-white py-2 rounded">บันทึก</button>
+                <button onclick="document.getElementById('user-modal').classList.add('hidden')" class="flex-1 bg-gray-200 py-2 rounded">ปิด</button>
             </div>
         </div>
     </div>
@@ -111,161 +189,222 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // AUTH
         auth.onAuthStateChanged(u => {
             if(u && u.email === 'gaga@gmail.com') {
                 document.getElementById('login-wall').classList.add('hidden');
-                init();
+                initData();
             } else {
                 document.getElementById('login-wall').classList.remove('hidden');
+                if(u) auth.signOut();
             }
         });
-
         function doLogin() {
             auth.signInWithEmailAndPassword(document.getElementById('a-email').value, document.getElementById('a-pass').value).catch(alert);
         }
 
-        function init() {
-            // Load Wheels
+        // LOAD DATA
+        function initData() {
+            // Dashboard & Transactions
+            db.ref('transactions').orderByChild('status').equalTo('pending').on('value', s => {
+                let dep = 0, wit = 0;
+                const tbody = document.getElementById('txn-list');
+                tbody.innerHTML = '';
+                
+                if(s.exists()) {
+                    s.forEach(c => {
+                        const t = c.val();
+                        if(t.type==='deposit') dep++; else wit++;
+                        
+                        const color = t.type==='deposit' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50';
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-gray-50 border-b">
+                                <td class="p-4 text-gray-500 text-xs">${new Date(t.timestamp).toLocaleString()}</td>
+                                <td class="p-4 text-sm">${t.email}</td>
+                                <td class="p-4"><span class="px-2 py-1 rounded text-xs font-bold ${color}">${t.type.toUpperCase()}</span></td>
+                                <td class="p-4 font-bold text-gray-700">฿${t.amount}</td>
+                                <td class="p-4 text-sm text-gray-500">${t.details}</td>
+                                <td class="p-4 text-right">
+                                    <button onclick="manageTx('${c.key}','${t.uid}',${t.amount},'${t.type}',true)" class="text-green-600 hover:bg-green-100 p-2 rounded">✔ อนุมัติ</button>
+                                    <button onclick="manageTx('${c.key}','${t.uid}',${t.amount},'${t.type}',false)" class="text-red-600 hover:bg-red-100 p-2 rounded">✘ ยกเลิก</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-400">ไม่มีรายการค้าง</td></tr>';
+                }
+                document.getElementById('dash-dep').innerText = dep;
+                document.getElementById('dash-wit').innerText = wit;
+            });
+
+            // Users
+            db.ref('users').on('value', s => {
+                const tbody = document.getElementById('user-list');
+                tbody.innerHTML = '';
+                let count = 0;
+                s.forEach(c => {
+                    count++;
+                    const u = c.val();
+                    tbody.innerHTML += `
+                        <tr class="border-b">
+                            <td class="p-4">${u.email}</td>
+                            <td class="p-4 font-mono text-xs text-gray-400">${c.key}</td>
+                            <td class="p-4 font-bold text-indigo-700">฿${(u.balance||0).toLocaleString()}</td>
+                            <td class="p-4 text-right">
+                                <button onclick="openUserEdit('${c.key}','${u.email}',${u.balance})" class="bg-gray-800 text-white px-3 py-1 rounded text-xs">แก้ไขเงิน</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('dash-usr').innerText = count;
+            });
+
+            // Wheels
             db.ref('wheels').on('value', s => {
-                const g = document.getElementById('wheel-grid');
-                g.innerHTML = '';
+                const grid = document.getElementById('wheel-grid');
+                grid.innerHTML = '';
                 s.forEach(c => {
                     const w = c.val();
-                    const k = c.key;
-                    g.innerHTML += `
-                        <div class="bg-white p-4 rounded shadow border hover:border-indigo-500 cursor-pointer relative group" onclick="editWheel('${k}')">
-                            <h3 class="font-bold text-lg">${w.name}</h3>
-                            <p class="text-gray-500 text-sm">ราคา: ${w.cost} บาท | ${w.segments ? w.segments.length : 0} ช่อง</p>
-                            <span class="absolute top-4 right-4 text-xs bg-gray-100 px-2 py-1 rounded group-hover:bg-indigo-100 text-indigo-700">แก้ไข</span>
-                        </div>
-                    `;
-                });
-            });
-
-            // Load Finance (Simple version)
-            db.ref('transactions').orderByChild('status').equalTo('pending').on('value', s => {
-                const l = document.getElementById('txn-list');
-                l.innerHTML = '';
-                s.forEach(c => {
-                    const t = c.val();
-                    l.innerHTML += `
-                        <div class="bg-white p-3 rounded shadow flex justify-between items-center text-sm">
-                            <div>${t.type} | ${t.amount} | ${t.details}</div>
-                            <div>
-                                <button onclick="appr('${c.key}','${t.uid}',${t.amount},'${t.type}')" class="text-green-600 font-bold mr-2">✔</button>
-                                <button onclick="rej('${c.key}')" class="text-red-600 font-bold">✘</button>
+                    grid.innerHTML += `
+                        <div class="bg-white p-4 rounded shadow border hover:border-indigo-500 relative group cursor-pointer" onclick="editWheel('${c.key}')">
+                            <h3 class="font-bold text-lg text-indigo-900">${w.name}</h3>
+                            <div class="flex justify-between mt-2 text-sm text-gray-500">
+                                <span>ราคา: ฿${w.cost}</span>
+                                <span>รางวัล: ${w.segments?w.segments.length:0} ช่อง</span>
                             </div>
+                            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs">แก้ไข</div>
                         </div>
                     `;
                 });
             });
-            
+
             // System
-            db.ref('system/bank_info').on('value', s => document.getElementById('sys-bank').value = s.val() || '');
+            db.ref('system').once('value', s => {
+                const d = s.val() || {};
+                document.getElementById('sys-msg').value = d.announcement || '';
+                document.getElementById('sys-bank').value = d.bank_info || '';
+            });
         }
 
-        // --- WHEEL EDITOR LOGIC ---
-        function tab(t) {
-            ['wheels','finance','system'].forEach(x=>document.getElementById('tab-'+x).classList.add('hidden'));
-            document.getElementById('tab-'+t).classList.remove('hidden');
+        // --- ACTIONS ---
+        function manageTx(key, uid, amt, type, approve) {
+            if(!confirm(approve?'ยืนยันอนุมัติ?':'ยืนยันปฏิเสธ?')) return;
+            
+            const updates = {};
+            updates[`transactions/${key}/status`] = approve ? 'approved' : 'rejected';
+            
+            if(approve && type === 'deposit') {
+                db.ref(`users/${uid}/balance`).transaction(v => (v||0) + amt);
+            }
+            if(!approve && type === 'withdraw') {
+                // Refund for rejected withdrawal
+                db.ref(`users/${uid}/balance`).transaction(v => (v||0) + amt);
+            }
+            
+            db.ref().update(updates);
         }
 
+        // Wheel Editor
         function openWheelModal() {
             document.getElementById('w-id').value = '';
             document.getElementById('w-name').value = '';
-            document.getElementById('w-cost').value = '100';
-            document.getElementById('seg-list').innerHTML = '';
-            // Add default 4 segments
-            [1,2,3,4].forEach(() => addSegment());
-            document.getElementById('btn-del-wheel').classList.add('hidden');
+            document.getElementById('w-cost').value = '10';
+            document.getElementById('seg-container').innerHTML = '';
+            [1,2,3,4].forEach(() => addSeg());
+            document.getElementById('btn-del').classList.add('hidden');
             document.getElementById('wheel-modal').classList.remove('hidden');
         }
-
         function closeWheelModal() { document.getElementById('wheel-modal').classList.add('hidden'); }
-
+        
         function editWheel(key) {
             db.ref('wheels/'+key).once('value', s => {
                 const w = s.val();
                 document.getElementById('w-id').value = key;
                 document.getElementById('w-name').value = w.name;
                 document.getElementById('w-cost').value = w.cost;
-                const list = document.getElementById('seg-list');
-                list.innerHTML = '';
-                (w.segments || []).forEach(seg => addSegment(seg));
-                document.getElementById('btn-del-wheel').classList.remove('hidden');
+                const c = document.getElementById('seg-container');
+                c.innerHTML = '';
+                (w.segments||[]).forEach(seg => addSeg(seg));
+                document.getElementById('btn-del').classList.remove('hidden');
                 document.getElementById('wheel-modal').classList.remove('hidden');
             });
         }
 
-        function addSegment(data = {}) {
-            const list = document.getElementById('seg-list');
-            const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
-            const randomColor = colors[Math.floor(Math.random()*colors.length)];
-            
+        function addSeg(data = {}) {
             const div = document.createElement('div');
-            div.className = "grid grid-cols-12 gap-2 mb-2 items-center seg-row";
+            div.className = "grid grid-cols-12 gap-2 seg-item mb-2";
+            const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#818cf8', '#a78bfa'];
+            const randC = colors[Math.floor(Math.random()*colors.length)];
+            
             div.innerHTML = `
-                <input type="text" class="col-span-3 border p-1 rounded text-sm s-label" placeholder="ป้าย" value="${data.label||'รางวัล'}">
-                <input type="number" class="col-span-2 border p-1 rounded text-sm s-val" placeholder="0" value="${data.value||0}">
-                <input type="color" class="col-span-2 h-8 w-full cursor-pointer s-color" value="${data.color||randomColor}">
-                <input type="number" class="col-span-2 border p-1 rounded text-sm s-weight" placeholder="10" value="${data.weight||10}">
+                <input type="text" class="col-span-3 border p-1 rounded text-sm s-label" value="${data.label||'รางวัล'}" placeholder="ชื่อ">
+                <input type="number" class="col-span-2 border p-1 rounded text-sm s-val" value="${data.value||0}" placeholder="0">
+                <input type="color" class="col-span-2 w-full h-8 s-color" value="${data.color||randC}">
+                <input type="number" class="col-span-2 border p-1 rounded text-sm s-weight" value="${data.weight||10}" placeholder="W">
                 <select class="col-span-2 border p-1 rounded text-sm s-type">
-                    <option value="cash" ${data.type==='cash'?'selected':''}>เงินสด</option>
+                    <option value="cash" ${data.type==='cash'?'selected':''}>ได้เงิน</option>
                     <option value="salt" ${data.type==='salt'?'selected':''}>เกลือ</option>
                 </select>
-                <button onclick="this.parentElement.remove()" class="col-span-1 text-red-500 font-bold hover:bg-red-50 rounded">X</button>
+                <button onclick="this.parentElement.remove()" class="col-span-1 text-red-500 hover:bg-red-50 rounded">X</button>
             `;
-            list.appendChild(div);
+            document.getElementById('seg-container').appendChild(div);
         }
 
         function saveWheel() {
             const id = document.getElementById('w-id').value;
-            const name = document.getElementById('w-name').value;
-            const cost = parseInt(document.getElementById('w-cost').value);
-            
             const segments = [];
-            document.querySelectorAll('.seg-row').forEach(row => {
+            document.querySelectorAll('.seg-item').forEach(el => {
                 segments.push({
-                    label: row.querySelector('.s-label').value,
-                    value: parseInt(row.querySelector('.s-val').value),
-                    color: row.querySelector('.s-color').value,
-                    weight: parseInt(row.querySelector('.s-weight').value),
-                    type: row.querySelector('.s-type').value
+                    label: el.querySelector('.s-label').value,
+                    value: parseInt(el.querySelector('.s-val').value),
+                    color: el.querySelector('.s-color').value,
+                    weight: parseInt(el.querySelector('.s-weight').value),
+                    type: el.querySelector('.s-type').value
                 });
             });
-
-            if(!name) return alert("ใส่ชื่อวงล้อ");
-
-            const data = { name, cost, segments };
-            if(id) {
-                db.ref('wheels/'+id).update(data);
-            } else {
-                db.ref('wheels').push(data);
-            }
+            const data = {
+                name: document.getElementById('w-name').value,
+                cost: parseInt(document.getElementById('w-cost').value),
+                segments
+            };
+            
+            if(id) db.ref('wheels/'+id).update(data); else db.ref('wheels').push(data);
             closeWheelModal();
         }
 
-        function deleteWheel() {
-            const id = document.getElementById('w-id').value;
-            if(confirm("ลบวงล้อนี้?")) {
-                db.ref('wheels/'+id).remove();
+        function delWheel() {
+            if(confirm('ลบเกมนี้?')) {
+                db.ref('wheels/'+document.getElementById('w-id').value).remove();
                 closeWheelModal();
             }
         }
 
-        // Finance Helpers
-        function appr(k, uid, amt, type) {
-            if(!confirm('ยืนยัน?')) return;
-            if(type === 'deposit') db.ref(`users/${uid}/balance`).transaction(v => (v||0)+amt);
-            db.ref(`transactions/${k}/status`).set('approved');
+        // Utils
+        function tab(t) {
+            document.querySelectorAll('.content-tab').forEach(e => e.classList.add('hidden'));
+            document.getElementById('tab-'+t).classList.remove('hidden');
         }
-        function rej(k) {
-            if(!confirm('ปฏิเสธ?')) return;
-            db.ref(`transactions/${k}/status`).set('rejected');
+        function saveSys() {
+            db.ref('system').set({
+                announcement: document.getElementById('sys-msg').value,
+                bank_info: document.getElementById('sys-bank').value
+            });
+            alert('บันทึกเรียบร้อย');
         }
-        function saveBank() {
-            db.ref('system/bank_info').set(document.getElementById('sys-bank').value);
-            alert("Saved");
+        function openUserEdit(uid, email, bal) {
+            document.getElementById('user-modal').classList.remove('hidden');
+            document.getElementById('user-modal').classList.add('flex');
+            document.getElementById('u-uid').value = uid;
+            document.getElementById('u-email-show').innerText = email;
+            document.getElementById('u-new-bal').value = bal;
+        }
+        function updateUserBalance() {
+            const uid = document.getElementById('u-uid').value;
+            const bal = parseInt(document.getElementById('u-new-bal').value);
+            db.ref(`users/${uid}/balance`).set(bal);
+            document.getElementById('user-modal').classList.add('hidden');
+            document.getElementById('user-modal').classList.remove('flex');
         }
 
     </script>
