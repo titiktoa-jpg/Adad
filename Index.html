@@ -2,98 +2,96 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel - Royal 9</title>
+    <title>Wheel Admin Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap" rel="stylesheet">
-    <style>body{font-family:'Kanit',sans-serif;background:#f3f4f6;}</style>
+    <style>body{font-family:'Kanit',sans-serif; background:#f3f4f6;}</style>
 </head>
-<body class="bg-gray-100 h-screen flex overflow-hidden">
+<body class="flex h-screen overflow-hidden">
 
     <div id="login-wall" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
-        <h1 class="text-2xl font-bold mb-4">ระบบหลังบ้าน (เฉพาะเจ้าหน้าที่)</h1>
-        <div class="w-80 space-y-3">
-            <input id="a-email" type="email" value="gaga@gmail.com" class="w-full border p-2 rounded" readonly>
-            <input id="a-pass" type="password" placeholder="รหัสผ่านของคุณ" class="w-full border p-2 rounded">
-            <button onclick="adminLogin()" class="w-full bg-black text-white py-2 rounded">เข้าสู่ระบบ</button>
-        </div>
+        <h2 class="text-xl font-bold mb-2">Admin Access</h2>
+        <input id="a-email" type="email" value="gaga@gmail.com" class="border p-2 rounded mb-2 w-64">
+        <input id="a-pass" type="password" placeholder="Password" class="border p-2 rounded mb-4 w-64">
+        <button onclick="doLogin()" class="bg-black text-white px-6 py-2 rounded">Login</button>
     </div>
 
     <aside class="w-64 bg-white border-r flex flex-col hidden md:flex">
-        <div class="p-6 font-bold text-xl text-indigo-700">ROYAL ADMIN</div>
-        <nav class="flex-1 p-4 space-y-2">
-            <button onclick="setTab('users')" class="w-full text-left p-3 rounded hover:bg-indigo-50 text-indigo-900 font-medium">👥 สมาชิก (Users)</button>
-            <button onclick="setTab('finance')" class="w-full text-left p-3 rounded hover:bg-indigo-50 text-indigo-900 font-medium">💰 ฝาก-ถอน (Finance)</button>
-            <button onclick="setTab('settings')" class="w-full text-left p-3 rounded hover:bg-indigo-50 text-indigo-900 font-medium">⚙️ ตั้งค่า (Settings)</button>
+        <div class="p-6 font-bold text-xl text-indigo-700">WHEEL MASTER</div>
+        <nav class="p-4 space-y-1">
+            <button onclick="tab('wheels')" class="w-full text-left p-3 rounded hover:bg-gray-100 font-bold">🎡 จัดการวงล้อ</button>
+            <button onclick="tab('finance')" class="w-full text-left p-3 rounded hover:bg-gray-100">💰 รายการฝากถอน</button>
+            <button onclick="tab('system')" class="w-full text-left p-3 rounded hover:bg-gray-100">⚙️ ตั้งค่าระบบ</button>
         </nav>
-        <div class="p-4 border-t">
-            <div id="my-email" class="text-xs text-gray-500 mb-2">...</div>
-            <button onclick="firebase.auth().signOut()" class="text-red-600 text-sm">ออกจากระบบ</button>
-        </div>
     </aside>
 
     <main class="flex-1 overflow-y-auto p-8">
         
-        <div id="tab-users" class="space-y-4">
-            <h2 class="text-2xl font-bold mb-4">จัดการลูกค้า</h2>
-            <div class="bg-white rounded shadow overflow-hidden">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50 border-b">
-                        <tr>
-                            <th class="p-4">Email</th>
-                            <th class="p-4">Wallet</th>
-                            <th class="p-4">Lock Status</th>
-                            <th class="p-4 text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="user-rows"></tbody>
-                </table>
+        <div id="tab-wheels">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">รายการวงล้อทั้งหมด</h2>
+                <button onclick="openWheelModal()" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">+ สร้างวงล้อใหม่</button>
             </div>
+            <div id="wheel-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
         </div>
 
-        <div id="tab-finance" class="hidden space-y-4">
-            <h2 class="text-2xl font-bold mb-4">รายการรออนุมัติ</h2>
-            <div id="txn-rows" class="grid gap-4"></div>
+        <div id="tab-finance" class="hidden">
+            <h2 class="text-2xl font-bold mb-4">รายการรอดำเนินการ</h2>
+            <div id="txn-list" class="space-y-2"></div>
         </div>
-
-        <div id="tab-settings" class="hidden space-y-4 max-w-xl">
-            <h2 class="text-2xl font-bold mb-4">ตั้งค่าระบบ</h2>
-            <div class="bg-white p-6 rounded shadow space-y-4">
-                <div>
-                    <label class="block text-sm font-bold mb-1">ประกาศตัววิ่ง</label>
-                    <input id="s-announce" class="w-full border p-2 rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">ลิงก์ติดต่อ</label>
-                    <input id="s-line" class="w-full border p-2 rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">ข้อมูลธนาคาร</label>
-                    <textarea id="s-bank" class="w-full border p-2 rounded h-24"></textarea>
-                </div>
-                <button onclick="saveSys()" class="bg-indigo-600 text-white px-4 py-2 rounded">บันทึก</button>
-            </div>
+        
+        <div id="tab-system" class="hidden">
+            <h2 class="text-2xl font-bold mb-4">ตั้งค่าบัญชีธนาคาร</h2>
+            <textarea id="sys-bank" class="w-full h-32 border p-2 rounded"></textarea>
+            <button onclick="saveBank()" class="mt-2 bg-green-600 text-white px-4 py-2 rounded">บันทึก</button>
         </div>
 
     </main>
 
-    <div id="edit-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg w-96 shadow-xl">
-            <h3 class="text-lg font-bold mb-4">แก้ไข: <span id="m-email" class="text-indigo-600"></span></h3>
-            <input type="hidden" id="m-uid">
+    <div id="wheel-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl h-[90vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 class="font-bold text-lg">ตั้งค่าวงล้อ</h3>
+                <button onclick="closeWheelModal()" class="text-red-500 text-2xl">&times;</button>
+            </div>
             
-            <label class="block text-xs font-bold text-gray-500 uppercase">เติม/ลด เครดิต</label>
-            <input type="number" id="m-bal" class="w-full border p-2 rounded mb-4 mt-1">
-            
-            <label class="block text-xs font-bold text-gray-500 uppercase">ล็อคผลการเล่น</label>
-            <select id="m-lock" class="w-full border p-2 rounded mb-6 mt-1 bg-gray-50">
-                <option value="normal">🎲 สุ่มตามดวง</option>
-                <option value="win">✅ บังคับชนะ (ได้ป๊อก 9)</option>
-                <option value="lose">❌ บังคับแพ้ (เจ้ากิน)</option>
-            </select>
-            
-            <div class="flex gap-2">
-                <button onclick="saveUser()" class="flex-1 bg-black text-white py-2 rounded">บันทึก</button>
-                <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="flex-1 bg-gray-200 py-2 rounded">ปิด</button>
+            <div class="p-6 overflow-y-auto flex-1 space-y-4">
+                <input type="hidden" id="w-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">ชื่อวงล้อ</label>
+                        <input type="text" id="w-name" class="w-full border p-2 rounded" placeholder="เช่น วงล้อเศรษฐี">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">ค่าเล่น (บาท)</label>
+                        <input type="number" id="w-cost" class="w-full border p-2 rounded" value="100">
+                    </div>
+                </div>
+
+                <div class="border-t pt-4">
+                    <div class="flex justify-between mb-2">
+                        <label class="font-bold">ช่องรางวัล (Segments)</label>
+                        <button onclick="addSegment()" class="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">+ เพิ่มช่อง</button>
+                    </div>
+                    <div class="grid grid-cols-12 gap-2 text-xs text-gray-500 font-bold text-center mb-1">
+                        <div class="col-span-3">ป้าย (Label)</div>
+                        <div class="col-span-2">เงินรางวัล</div>
+                        <div class="col-span-2">สี (Hex)</div>
+                        <div class="col-span-2">โอกาส (Weight)</div>
+                        <div class="col-span-2">แบบ</div>
+                        <div class="col-span-1">ลบ</div>
+                    </div>
+                    <div id="seg-list" class="space-y-2">
+                        </div>
+                    <p class="text-xs text-gray-400 mt-2">* Weight ยิ่งเยอะ ยิ่งออกบ่อย (เช่น ช่องเกลือใส่ 100, รางวัลใหญ่ใส่ 1)</p>
+                </div>
+            </div>
+
+            <div class="p-4 border-t bg-gray-50 flex justify-end gap-2">
+                <button onclick="deleteWheel()" id="btn-del-wheel" class="text-red-600 text-sm px-4 mr-auto hidden">ลบวงล้อนี้</button>
+                <button onclick="closeWheelModal()" class="px-4 py-2 border rounded text-gray-600">ยกเลิก</button>
+                <button onclick="saveWheel()" class="px-6 py-2 bg-black text-white rounded hover:bg-gray-800">บันทึก</button>
             </div>
         </div>
     </div>
@@ -114,134 +112,162 @@
         const db = firebase.database();
 
         auth.onAuthStateChanged(u => {
-            if(u && u.email === 'gaga@gmail.com') { // Check email security client-side + rules
+            if(u && u.email === 'gaga@gmail.com') {
                 document.getElementById('login-wall').classList.add('hidden');
-                document.getElementById('my-email').innerText = u.email;
-                initData();
-            } else if (u) {
-                alert("ไม่ใช่แอดมิน!");
-                auth.signOut();
+                init();
             } else {
                 document.getElementById('login-wall').classList.remove('hidden');
             }
         });
 
-        function adminLogin() {
-            auth.signInWithEmailAndPassword(
-                document.getElementById('a-email').value,
-                document.getElementById('a-pass').value
-            ).catch(e => alert(e.message));
+        function doLogin() {
+            auth.signInWithEmailAndPassword(document.getElementById('a-email').value, document.getElementById('a-pass').value).catch(alert);
         }
 
-        function initData() {
-            // USERS
-            db.ref('users').on('value', s => {
-                const tr = document.getElementById('user-rows');
-                tr.innerHTML = '';
+        function init() {
+            // Load Wheels
+            db.ref('wheels').on('value', s => {
+                const g = document.getElementById('wheel-grid');
+                g.innerHTML = '';
                 s.forEach(c => {
-                    const u = c.val();
+                    const w = c.val();
                     const k = c.key;
-                    let lockBadge = `<span class="px-2 py-1 rounded text-xs bg-gray-200">Normal</span>`;
-                    if(u.lock_result === 'win') lockBadge = `<span class="px-2 py-1 rounded text-xs bg-green-100 text-green-800 font-bold">Lock WIN</span>`;
-                    if(u.lock_result === 'lose') lockBadge = `<span class="px-2 py-1 rounded text-xs bg-red-100 text-red-800 font-bold">Lock LOSE</span>`;
-                    
-                    tr.innerHTML += `
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="p-4">${u.email}</td>
-                            <td class="p-4 font-mono font-bold text-indigo-600">฿${(u.balance||0).toLocaleString()}</td>
-                            <td class="p-4">${lockBadge}</td>
-                            <td class="p-4 text-right">
-                                <button onclick="openEdit('${k}','${u.email}',${u.balance},'${u.lock_result}')" class="bg-black text-white px-3 py-1 rounded text-sm hover:bg-gray-800">จัดการ</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            });
-
-            // FINANCE
-            db.ref('transactions').orderByChild('status').equalTo('pending').on('value', s => {
-                const div = document.getElementById('txn-rows');
-                div.innerHTML = '';
-                if(!s.exists()) div.innerHTML = `<div class="p-4 text-gray-400">ไม่มีรายการค้าง</div>`;
-                
-                s.forEach(c => {
-                    const t = c.val();
-                    const k = c.key;
-                    const isDep = t.type==='deposit';
-                    div.innerHTML += `
-                        <div class="bg-white p-4 rounded shadow border-l-4 ${isDep?'border-green-500':'border-red-500'} flex justify-between items-center">
-                            <div>
-                                <div class="font-bold text-lg">${isDep?'แจ้งฝาก':'แจ้งถอน'} ฿${t.amount.toLocaleString()}</div>
-                                <div class="text-sm text-gray-500">${t.email} | ${t.details}</div>
-                                <div class="text-xs text-gray-400">${new Date(t.timestamp).toLocaleString()}</div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="doTxn('${k}','${t.uid}',${t.amount},'${t.type}',true)" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">อนุมัติ</button>
-                                <button onclick="doTxn('${k}','${t.uid}',${t.amount},'${t.type}',false)" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">ยกเลิก</button>
-                            </div>
+                    g.innerHTML += `
+                        <div class="bg-white p-4 rounded shadow border hover:border-indigo-500 cursor-pointer relative group" onclick="editWheel('${k}')">
+                            <h3 class="font-bold text-lg">${w.name}</h3>
+                            <p class="text-gray-500 text-sm">ราคา: ${w.cost} บาท | ${w.segments ? w.segments.length : 0} ช่อง</p>
+                            <span class="absolute top-4 right-4 text-xs bg-gray-100 px-2 py-1 rounded group-hover:bg-indigo-100 text-indigo-700">แก้ไข</span>
                         </div>
                     `;
                 });
             });
 
-            // SETTINGS
-            db.ref('system').once('value', s => {
-                const d = s.val() || {};
-                document.getElementById('s-announce').value = d.announcement || '';
-                document.getElementById('s-line').value = d.contact_line || '';
-                document.getElementById('s-bank').value = d.bank_info || '';
+            // Load Finance (Simple version)
+            db.ref('transactions').orderByChild('status').equalTo('pending').on('value', s => {
+                const l = document.getElementById('txn-list');
+                l.innerHTML = '';
+                s.forEach(c => {
+                    const t = c.val();
+                    l.innerHTML += `
+                        <div class="bg-white p-3 rounded shadow flex justify-between items-center text-sm">
+                            <div>${t.type} | ${t.amount} | ${t.details}</div>
+                            <div>
+                                <button onclick="appr('${c.key}','${t.uid}',${t.amount},'${t.type}')" class="text-green-600 font-bold mr-2">✔</button>
+                                <button onclick="rej('${c.key}')" class="text-red-600 font-bold">✘</button>
+                            </div>
+                        </div>
+                    `;
+                });
             });
+            
+            // System
+            db.ref('system/bank_info').on('value', s => document.getElementById('sys-bank').value = s.val() || '');
         }
 
-        // ACTIONS
-        function setTab(t) {
-            ['users','finance','settings'].forEach(x => document.getElementById('tab-'+x).classList.add('hidden'));
+        // --- WHEEL EDITOR LOGIC ---
+        function tab(t) {
+            ['wheels','finance','system'].forEach(x=>document.getElementById('tab-'+x).classList.add('hidden'));
             document.getElementById('tab-'+t).classList.remove('hidden');
         }
 
-        function openEdit(uid, email, bal, lock) {
-            document.getElementById('m-uid').value = uid;
-            document.getElementById('m-email').innerText = email;
-            document.getElementById('m-bal').value = bal;
-            document.getElementById('m-lock').value = lock || 'normal';
-            document.getElementById('edit-modal').classList.remove('hidden');
-            document.getElementById('edit-modal').classList.add('flex');
+        function openWheelModal() {
+            document.getElementById('w-id').value = '';
+            document.getElementById('w-name').value = '';
+            document.getElementById('w-cost').value = '100';
+            document.getElementById('seg-list').innerHTML = '';
+            // Add default 4 segments
+            [1,2,3,4].forEach(() => addSegment());
+            document.getElementById('btn-del-wheel').classList.add('hidden');
+            document.getElementById('wheel-modal').classList.remove('hidden');
         }
 
-        function saveUser() {
-            const uid = document.getElementById('m-uid').value;
-            db.ref('users/'+uid).update({
-                balance: parseInt(document.getElementById('m-bal').value),
-                lock_result: document.getElementById('m-lock').value
+        function closeWheelModal() { document.getElementById('wheel-modal').classList.add('hidden'); }
+
+        function editWheel(key) {
+            db.ref('wheels/'+key).once('value', s => {
+                const w = s.val();
+                document.getElementById('w-id').value = key;
+                document.getElementById('w-name').value = w.name;
+                document.getElementById('w-cost').value = w.cost;
+                const list = document.getElementById('seg-list');
+                list.innerHTML = '';
+                (w.segments || []).forEach(seg => addSegment(seg));
+                document.getElementById('btn-del-wheel').classList.remove('hidden');
+                document.getElementById('wheel-modal').classList.remove('hidden');
             });
-            document.getElementById('edit-modal').classList.add('hidden');
-            document.getElementById('edit-modal').classList.remove('flex');
         }
 
-        function doTxn(key, uid, amt, type, approve) {
-            if(!confirm(approve ? 'ยืนยันอนุมัติ?' : 'ยืนยันยกเลิก?')) return;
+        function addSegment(data = {}) {
+            const list = document.getElementById('seg-list');
+            const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+            const randomColor = colors[Math.floor(Math.random()*colors.length)];
             
-            const updates = {};
-            updates[`transactions/${key}/status`] = approve ? 'approved' : 'rejected';
-            
-            if(approve && type === 'deposit') {
-                db.ref(`users/${uid}/balance`).transaction(c => (c||0) + amt);
-            }
-            if(!approve && type === 'withdraw') { // Refund if rejected withdrawal
-                db.ref(`users/${uid}/balance`).transaction(c => (c||0) + amt);
-            }
-            
-            db.ref().update(updates);
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-12 gap-2 mb-2 items-center seg-row";
+            div.innerHTML = `
+                <input type="text" class="col-span-3 border p-1 rounded text-sm s-label" placeholder="ป้าย" value="${data.label||'รางวัล'}">
+                <input type="number" class="col-span-2 border p-1 rounded text-sm s-val" placeholder="0" value="${data.value||0}">
+                <input type="color" class="col-span-2 h-8 w-full cursor-pointer s-color" value="${data.color||randomColor}">
+                <input type="number" class="col-span-2 border p-1 rounded text-sm s-weight" placeholder="10" value="${data.weight||10}">
+                <select class="col-span-2 border p-1 rounded text-sm s-type">
+                    <option value="cash" ${data.type==='cash'?'selected':''}>เงินสด</option>
+                    <option value="salt" ${data.type==='salt'?'selected':''}>เกลือ</option>
+                </select>
+                <button onclick="this.parentElement.remove()" class="col-span-1 text-red-500 font-bold hover:bg-red-50 rounded">X</button>
+            `;
+            list.appendChild(div);
         }
 
-        function saveSys() {
-            db.ref('system').set({
-                announcement: document.getElementById('s-announce').value,
-                contact_line: document.getElementById('s-line').value,
-                bank_info: document.getElementById('s-bank').value
+        function saveWheel() {
+            const id = document.getElementById('w-id').value;
+            const name = document.getElementById('w-name').value;
+            const cost = parseInt(document.getElementById('w-cost').value);
+            
+            const segments = [];
+            document.querySelectorAll('.seg-row').forEach(row => {
+                segments.push({
+                    label: row.querySelector('.s-label').value,
+                    value: parseInt(row.querySelector('.s-val').value),
+                    color: row.querySelector('.s-color').value,
+                    weight: parseInt(row.querySelector('.s-weight').value),
+                    type: row.querySelector('.s-type').value
+                });
             });
-            alert("บันทึกแล้ว");
+
+            if(!name) return alert("ใส่ชื่อวงล้อ");
+
+            const data = { name, cost, segments };
+            if(id) {
+                db.ref('wheels/'+id).update(data);
+            } else {
+                db.ref('wheels').push(data);
+            }
+            closeWheelModal();
         }
+
+        function deleteWheel() {
+            const id = document.getElementById('w-id').value;
+            if(confirm("ลบวงล้อนี้?")) {
+                db.ref('wheels/'+id).remove();
+                closeWheelModal();
+            }
+        }
+
+        // Finance Helpers
+        function appr(k, uid, amt, type) {
+            if(!confirm('ยืนยัน?')) return;
+            if(type === 'deposit') db.ref(`users/${uid}/balance`).transaction(v => (v||0)+amt);
+            db.ref(`transactions/${k}/status`).set('approved');
+        }
+        function rej(k) {
+            if(!confirm('ปฏิเสธ?')) return;
+            db.ref(`transactions/${k}/status`).set('rejected');
+        }
+        function saveBank() {
+            db.ref('system/bank_info').set(document.getElementById('sys-bank').value);
+            alert("Saved");
+        }
+
     </script>
 </body>
 </html>
