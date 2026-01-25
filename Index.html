@@ -2,88 +2,174 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Reward System</title>
+    <title>Admin Dashboard | Reward System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;500;700&display=swap" rel="stylesheet">
-    <style>body{font-family:'Sarabun',sans-serif; background:#f1f5f9;}</style>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; }
+        .sidebar-link { transition: all 0.2s; }
+        .sidebar-link:hover, .sidebar-link.active { background: #334155; color: white; border-right: 4px solid #3b82f6; }
+        .card { background: white; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
 </head>
-<body class="flex h-screen text-slate-800">
+<body class="flex h-screen overflow-hidden text-slate-800">
 
-    <div id="login-wall" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-96">
-            <h2 class="text-2xl font-bold mb-4 text-slate-800">Admin Panel</h2>
-            <input id="a-email" type="email" value="gaga@gmail.com" class="w-full border p-2 rounded mb-2 bg-slate-100" readonly>
-            <input id="a-pass" type="password" placeholder="Password" class="w-full border p-2 rounded mb-4">
-            <button onclick="doLogin()" class="w-full bg-slate-800 text-white py-2 rounded font-bold hover:bg-slate-700">Login</button>
+    <div id="login-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-blue-600 rounded-xl mx-auto flex items-center justify-center text-white text-2xl font-bold mb-4">A</div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">ผู้ดูแลระบบ</h2>
+            <form onsubmit="adminLogin(event)" class="space-y-4">
+                <input type="email" id="adm-email" value="gaga@gmail.com" class="w-full p-3 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none" readonly>
+                <input type="password" id="adm-pass" placeholder="รหัสผ่าน" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                <button type="submit" class="w-full bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg">เข้าสู่ระบบ</button>
+            </form>
         </div>
     </div>
 
-    <aside class="w-64 bg-slate-800 text-white flex flex-col">
-        <div class="p-6 text-xl font-bold border-b border-slate-700">📦 Item Manager</div>
-        <nav class="flex-1 p-4 space-y-2">
-            <button onclick="tab('req')" class="w-full text-left p-3 rounded hover:bg-slate-700">📩 คำขอรับของ</button>
-            <button onclick="tab('items')" class="w-full text-left p-3 rounded hover:bg-slate-700">🎁 จัดการของรางวัล</button>
-            <button onclick="tab('cats')" class="w-full text-left p-3 rounded hover:bg-slate-700">📁 จัดการหมวดหมู่</button>
+    <aside class="w-64 bg-slate-900 text-slate-400 flex flex-col shadow-2xl z-20">
+        <div class="h-16 flex items-center px-6 font-bold text-white text-xl border-b border-slate-800">
+            <i class="fas fa-shield-alt mr-2 text-blue-500"></i> Admin<span class="text-blue-500">Panel</span>
+        </div>
+        <nav class="flex-1 py-6 space-y-1">
+            <a onclick="switchTab('dashboard')" class="sidebar-link active flex items-center px-6 py-3 cursor-pointer">
+                <i class="fas fa-chart-pie w-6"></i> ภาพรวม
+            </a>
+            <a onclick="switchTab('requests')" class="sidebar-link flex items-center px-6 py-3 cursor-pointer relative">
+                <i class="fas fa-envelope-open-text w-6"></i> คำขอรับของ
+                <span id="badge-req" class="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full hidden">0</span>
+            </a>
+            <a onclick="switchTab('items')" class="sidebar-link flex items-center px-6 py-3 cursor-pointer">
+                <i class="fas fa-gift w-6"></i> จัดการสินค้า
+            </a>
+            <a onclick="switchTab('categories')" class="sidebar-link flex items-center px-6 py-3 cursor-pointer">
+                <i class="fas fa-layer-group w-6"></i> หมวดหมู่
+            </a>
         </nav>
-        <button onclick="auth.signOut()" class="p-4 text-center text-red-400 hover:bg-slate-900">Logout</button>
+        <div class="p-4 border-t border-slate-800">
+            <button onclick="auth.signOut()" class="w-full flex items-center justify-center gap-2 text-red-400 hover:bg-slate-800 py-2 rounded transition">
+                <i class="fas fa-power-off"></i> ออกจากระบบ
+            </button>
+        </div>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto">
-        
-        <div id="tab-req" class="page-tab">
-            <h2 class="text-2xl font-bold mb-6">รายการคำขอ (Pending)</h2>
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-100 text-slate-500">
-                        <tr>
-                            <th class="p-4">เวลา</th>
-                            <th class="p-4">User</th>
-                            <th class="p-4">Item</th>
-                            <th class="p-4">ข้อมูลที่ลูกค้ากรอก (Form Data)</th>
-                            <th class="p-4 text-right">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="req-list" class="divide-y"></tbody>
-                </table>
+    <main class="flex-1 flex flex-col overflow-hidden bg-slate-50 relative">
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
+            <h2 id="page-title" class="text-xl font-bold text-slate-700">ภาพรวมระบบ</h2>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/True_Money_Wallet_Logo.svg/2560px-True_Money_Wallet_Logo.svg.png" class="h-4 opacity-80">
+                    <span class="text-xs font-bold text-slate-500">System Ready</span>
+                </div>
             </div>
-        </div>
+        </header>
 
-        <div id="tab-items" class="page-tab hidden">
-            <div class="flex justify-between mb-6">
-                <h2 class="text-2xl font-bold">รายการของรางวัล</h2>
-                <button onclick="openItemModal()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">+ เพิ่มไอเทม</button>
+        <div class="flex-1 overflow-auto p-8">
+            
+            <div id="tab-dashboard" class="page-section">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="card p-6 border-l-4 border-blue-500">
+                        <div class="text-slate-400 text-sm font-medium mb-1">คำขอรอตรวจสอบ</div>
+                        <div class="text-3xl font-bold text-slate-800" id="stat-pending">0</div>
+                    </div>
+                    <div class="card p-6 border-l-4 border-green-500">
+                        <div class="text-slate-400 text-sm font-medium mb-1">แจกไปแล้วทั้งหมด</div>
+                        <div class="text-3xl font-bold text-slate-800" id="stat-approved">0</div>
+                    </div>
+                    <div class="card p-6 border-l-4 border-purple-500">
+                        <div class="text-slate-400 text-sm font-medium mb-1">จำนวนไอเทมในคลัง</div>
+                        <div class="text-3xl font-bold text-slate-800" id="stat-items">0</div>
+                    </div>
+                </div>
             </div>
-            <div id="item-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        </div>
 
-        <div id="tab-cats" class="page-tab hidden">
-            <div class="flex justify-between mb-6">
-                <h2 class="text-2xl font-bold">หมวดหมู่เกม</h2>
-                <button onclick="addCat()" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">+ เพิ่มหมวด</button>
+            <div id="tab-requests" class="page-section hidden">
+                <div class="card overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-100 text-slate-500 text-sm uppercase">
+                            <tr>
+                                <th class="p-4 font-medium">วันที่</th>
+                                <th class="p-4 font-medium">ผู้ขอ</th>
+                                <th class="p-4 font-medium">ไอเทม</th>
+                                <th class="p-4 font-medium">ข้อมูลที่กรอก</th>
+                                <th class="p-4 font-medium text-right">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="req-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
             </div>
-            <div id="cat-grid" class="space-y-2 max-w-lg"></div>
-        </div>
 
+            <div id="tab-items" class="page-section hidden">
+                <div class="flex justify-between mb-6">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" placeholder="ค้นหาไอเทม..." class="pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button onclick="openItemModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow font-medium transition">
+                        <i class="fas fa-plus mr-2"></i> เพิ่มสินค้า
+                    </button>
+                </div>
+                <div id="item-manager-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+
+            <div id="tab-categories" class="page-section hidden">
+                <div class="max-w-xl">
+                    <div class="flex gap-2 mb-6">
+                        <input type="text" id="new-cat-name" placeholder="ชื่อหมวดหมู่ใหม่" class="flex-1 p-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        <button onclick="addCategory()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium">เพิ่ม</button>
+                    </div>
+                    <div id="cat-list" class="space-y-3"></div>
+                </div>
+            </div>
+
+        </div>
     </main>
 
-    <div id="item-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg w-full max-w-lg p-6">
-            <h3 class="text-xl font-bold mb-4">เพิ่ม/แก้ไข ไอเทม</h3>
-            <div class="space-y-3">
-                <input type="text" id="i-name" placeholder="ชื่อไอเทม" class="w-full border p-2 rounded">
-                <input type="text" id="i-img" placeholder="URL รูปภาพ" class="w-full border p-2 rounded">
-                <select id="i-cat" class="w-full border p-2 rounded"></select>
-                
-                <div class="bg-yellow-50 p-3 rounded border border-yellow-200">
-                    <label class="font-bold text-sm block mb-1">ข้อมูลที่ลูกค้าต้องกรอก (สำคัญ)</label>
-                    <input type="text" id="i-fields" placeholder="เช่น: UID, Server, ชื่อในเกม" class="w-full border p-2 rounded text-sm">
-                    <p class="text-xs text-gray-500 mt-1">* คั่นด้วยลูกน้ำ (,) ระบบจะสร้างช่องกรอกให้ลูกค้าเอง</p>
+    <div id="item-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-slate-800">จัดการข้อมูลสินค้า</h3>
+                <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1 space-y-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">ชื่อไอเทม</label>
+                        <input type="text" id="i-name" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">หมวดหมู่</label>
+                        <select id="i-cat" class="w-full border p-2 rounded bg-white outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">จำกัดสิทธิ์ (ครั้ง/คน) <span class="text-gray-300 font-normal">(0 = ไม่จำกัด)</span></label>
+                        <input type="number" id="i-limit" value="0" class="w-full border p-2 rounded outline-none">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">URL รูปภาพ</label>
+                        <input type="text" id="i-img" class="w-full border p-2 rounded outline-none" placeholder="https://...">
+                    </div>
                 </div>
 
-                <div class="flex justify-end gap-2 mt-4">
-                    <button onclick="closeModal()" class="px-4 py-2 text-gray-500">ยกเลิก</button>
-                    <button onclick="saveItem()" class="px-4 py-2 bg-blue-600 text-white rounded">บันทึก</button>
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="text-sm font-bold text-slate-700"><i class="fas fa-tools mr-1"></i> ช่องกรอกข้อมูลสำหรับลูกค้า</label>
+                        <button onclick="addFormField()" class="text-xs bg-white border border-slate-300 px-2 py-1 rounded hover:bg-slate-100">+ เพิ่มช่องกรอก</button>
+                    </div>
+                    <div id="form-builder-container" class="space-y-2">
+                        </div>
                 </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-xl">
+                <button onclick="closeItemModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded transition">ยกเลิก</button>
+                <button onclick="saveItem()" class="px-6 py-2 bg-blue-600 text-white font-bold rounded shadow hover:bg-blue-700 transition">บันทึกข้อมูล</button>
             </div>
         </div>
     </div>
@@ -91,42 +177,50 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <script>
-        const config = {
+        // CONFIG
+        const firebaseConfig = {
             apiKey: "AIzaSyABuBrdprpiN32ZD4cSCiSslkYbRfnWGgE",
             authDomain: "namba-fe57a.firebaseapp.com",
             databaseURL: "https://namba-fe57a-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "namba-fe57a",
             appId: "1:340416568750:web:bb0a58ee618978bc107c3f"
         };
-        firebase.initializeApp(config);
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
 
-        auth.onAuthStateChanged(u => {
-            if(u && u.email === 'gaga@gmail.com') {
-                document.getElementById('login-wall').classList.add('hidden');
-                initAdmin();
+        // AUTH
+        auth.onAuthStateChanged(user => {
+            if (user && user.email === 'gaga@gmail.com') {
+                document.getElementById('login-screen').classList.add('hidden');
+                initDashboard();
             } else {
-                document.getElementById('login-wall').classList.remove('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
             }
         });
+        function adminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('adm-email').value;
+            const pass = document.getElementById('adm-pass').value;
+            auth.signInWithEmailAndPassword(email, pass).catch(err => alert("Login Error: " + err.message));
+        }
 
-        const doLogin = () => auth.signInWithEmailAndPassword(document.getElementById('a-email').value, document.getElementById('a-pass').value);
-
-        function initAdmin() {
-            // Load Categories
+        // --- DASHBOARD LOGIC ---
+        function initDashboard() {
+            // Load Categories for Select
             db.ref('categories').on('value', s => {
                 const sel = document.getElementById('i-cat');
-                const grid = document.getElementById('cat-grid');
-                sel.innerHTML = ''; grid.innerHTML = '';
+                const list = document.getElementById('cat-list');
+                sel.innerHTML = ''; list.innerHTML = '';
                 
                 s.forEach(c => {
                     sel.innerHTML += `<option value="${c.key}">${c.val().name}</option>`;
-                    grid.innerHTML += `
-                        <div class="flex justify-between bg-white p-3 rounded border">
-                            <span>${c.val().name}</span>
-                            <button onclick="db.ref('categories/${c.key}').remove()" class="text-red-500 text-sm">ลบ</button>
+                    list.innerHTML += `
+                        <div class="flex justify-between items-center bg-white p-3 rounded border border-slate-200">
+                            <span class="font-medium">${c.val().name}</span>
+                            <button onclick="db.ref('categories/${c.key}').remove()" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
                         </div>
                     `;
                 });
@@ -134,90 +228,188 @@
 
             // Load Items
             db.ref('items').on('value', s => {
-                const grid = document.getElementById('item-grid');
+                const grid = document.getElementById('item-manager-grid');
                 grid.innerHTML = '';
+                let count = 0;
                 s.forEach(c => {
-                    const i = c.val();
-                    const fields = i.fields ? i.fields.join(', ') : '-';
+                    count++;
+                    const item = c.val();
                     grid.innerHTML += `
-                        <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500 relative">
-                            <h3 class="font-bold">${i.name}</h3>
-                            <p class="text-sm text-gray-500">Require: ${fields}</p>
-                            <button onclick="db.ref('items/${c.key}').remove()" class="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1 rounded">ลบ</button>
+                        <div class="card p-4 relative group">
+                            <div class="flex gap-4">
+                                <img src="${item.image}" class="w-16 h-16 rounded-lg object-cover bg-slate-100">
+                                <div>
+                                    <h4 class="font-bold text-slate-800 line-clamp-1">${item.name}</h4>
+                                    <div class="text-xs text-slate-500 mt-1">Limit: ${item.limitPerUser || 'No'}</div>
+                                    <div class="text-xs text-blue-600 mt-1">${item.formFields ? item.formFields.length : 0} Fields</div>
+                                </div>
+                            </div>
+                            <button onclick="db.ref('items/${c.key}').remove()" class="absolute top-2 right-2 text-red-300 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button>
                         </div>
                     `;
                 });
+                document.getElementById('stat-items').innerText = count;
             });
 
-            // Load Pending Requests
-            db.ref('requests').orderByChild('status').equalTo('pending').on('value', s => {
-                const tbody = document.getElementById('req-list');
+            // Load Requests (Pending)
+            db.ref('requests').on('value', s => {
+                const tbody = document.getElementById('req-table-body');
                 tbody.innerHTML = '';
-                if(!s.exists()) { tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">ไม่มีคำขอใหม่</td></tr>'; return; }
+                let pendingCount = 0;
+                let approvedCount = 0;
+
+                const arr = [];
+                s.forEach(c => arr.push({ key: c.key, ...c.val() }));
                 
-                s.forEach(c => {
-                    const r = c.val();
-                    // Format Form Data JSON to HTML
-                    let formHtml = '';
-                    if(r.formData) {
-                        formHtml = Object.entries(r.formData).map(([k, v]) => 
-                            `<div class="text-xs"><span class="font-bold text-gray-600">${k}:</span> ${v}</div>`
-                        ).join('');
+                // Sort by new
+                arr.sort((a,b) => b.timestamp - a.timestamp);
+
+                arr.forEach(r => {
+                    if(r.status === 'pending') pendingCount++;
+                    if(r.status === 'approved') approvedCount++;
+
+                    // Only show Pending in table for management
+                    if(r.status === 'pending') {
+                        // Build Form Data Display
+                        let dataHtml = '';
+                        if(r.formData) {
+                            dataHtml = Object.entries(r.formData).map(([k,v]) => 
+                                `<div class="text-xs mb-1"><span class="font-semibold text-slate-600">${k}:</span> <span class="select-all bg-yellow-100 px-1 rounded">${v}</span></div>`
+                            ).join('');
+                        }
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                                <td class="p-4 text-xs text-slate-400">${new Date(r.timestamp).toLocaleString('th-TH')}</td>
+                                <td class="p-4">
+                                    <div class="font-bold text-sm text-slate-700">${r.email}</div>
+                                    <div class="text-[10px] text-slate-400 font-mono">${r.uid}</div>
+                                </td>
+                                <td class="p-4">
+                                    <div class="flex items-center gap-2">
+                                        <img src="${r.itemImage}" class="w-8 h-8 rounded bg-slate-200">
+                                        <span class="text-sm font-medium text-blue-600">${r.itemName}</span>
+                                    </div>
+                                </td>
+                                <td class="p-4 bg-slate-50/50 min-w-[200px]">${dataHtml}</td>
+                                <td class="p-4 text-right">
+                                    <button onclick="updateStatus('${r.key}', 'approved')" class="text-green-600 hover:bg-green-50 px-3 py-1 rounded border border-green-200 text-xs font-bold mr-1">อนุมัติ</button>
+                                    <button onclick="updateStatus('${r.key}', 'rejected')" class="text-red-600 hover:bg-red-50 px-3 py-1 rounded border border-red-200 text-xs font-bold">ปฏิเสธ</button>
+                                </td>
+                            </tr>
+                        `;
                     }
-
-                    tbody.innerHTML += `
-                        <tr class="border-b hover:bg-slate-50">
-                            <td class="p-4 text-xs text-gray-500">${new Date(r.timestamp).toLocaleString()}</td>
-                            <td class="p-4 text-sm">${r.email}</td>
-                            <td class="p-4 font-bold text-blue-600">${r.itemName}</td>
-                            <td class="p-4 bg-yellow-50 rounded border border-yellow-100">${formHtml || '-'}</td>
-                            <td class="p-4 text-right space-x-2">
-                                <button onclick="setStatus('${c.key}', 'approved')" class="text-green-600 border border-green-600 px-2 py-1 rounded text-xs hover:bg-green-50">อนุมัติ</button>
-                                <button onclick="setStatus('${c.key}', 'rejected')" class="text-red-600 border border-red-600 px-2 py-1 rounded text-xs hover:bg-red-50">ปฏิเสธ</button>
-                            </td>
-                        </tr>
-                    `;
                 });
+
+                document.getElementById('stat-pending').innerText = pendingCount;
+                document.getElementById('stat-approved').innerText = approvedCount;
+                
+                const badge = document.getElementById('badge-req');
+                if(pendingCount > 0) {
+                    badge.innerText = pendingCount;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
             });
         }
 
-        // Actions
-        function addCat() {
-            const name = prompt("ชื่อหมวดหมู่เกม:");
-            if(name) db.ref('categories').push({ name });
+        // --- ACTIONS ---
+        function addCategory() {
+            const name = document.getElementById('new-cat-name').value;
+            if(name) {
+                db.ref('categories').push({ name });
+                document.getElementById('new-cat-name').value = '';
+            }
         }
 
-        function openItemModal() {
-            document.getElementById('item-modal').classList.remove('hidden');
-        }
-
-        function saveItem() {
-            const name = document.getElementById('i-name').value;
-            const img = document.getElementById('i-img').value;
-            const cat = document.getElementById('i-cat').value;
-            const fieldStr = document.getElementById('i-fields').value;
-
-            if(!name || !cat) return alert('กรุณากรอกข้อมูล');
-
-            // แปลง string "UID, Server" -> Array ['UID', 'Server']
-            const fields = fieldStr.split(',').map(s => s.trim()).filter(s => s !== '');
-
-            db.ref('items').push({
-                name, image: img, category: cat, fields
-            });
-            closeModal();
-        }
-
-        function setStatus(key, status) {
-            if(confirm('ยืนยันสถานะ: ' + status)) {
+        function updateStatus(key, status) {
+            if(confirm('ยืนยันสถานะ: ' + status + '?')) {
                 db.ref('requests/' + key).update({ status });
             }
         }
 
-        function closeModal() { document.getElementById('item-modal').classList.add('hidden'); }
-        function tab(t) {
-            document.querySelectorAll('.page-tab').forEach(e => e.classList.add('hidden'));
-            document.getElementById('tab-'+t).classList.remove('hidden');
+        // --- ITEM MANAGER & FORM BUILDER ---
+        let currentFormFields = [];
+
+        function openItemModal() {
+            currentFormFields = []; // Reset
+            renderFormFields();
+            document.getElementById('i-name').value = '';
+            document.getElementById('i-img').value = '';
+            document.getElementById('i-limit').value = 0;
+            document.getElementById('item-modal').classList.remove('hidden');
+        }
+
+        function closeItemModal() {
+            document.getElementById('item-modal').classList.add('hidden');
+        }
+
+        function addFormField() {
+            // Default new field
+            currentFormFields.push({ label: 'ตัวอย่างข้อมูล', type: 'text' });
+            renderFormFields();
+        }
+
+        function removeFormField(index) {
+            currentFormFields.splice(index, 1);
+            renderFormFields();
+        }
+
+        function updateField(index, key, value) {
+            currentFormFields[index][key] = value;
+        }
+
+        function renderFormFields() {
+            const container = document.getElementById('form-builder-container');
+            container.innerHTML = '';
+            currentFormFields.forEach((field, index) => {
+                container.innerHTML += `
+                    <div class="flex gap-2 items-center bg-white p-2 rounded border border-slate-200 shadow-sm">
+                        <span class="text-slate-400 text-xs w-6 text-center">${index+1}</span>
+                        <input type="text" value="${field.label}" onchange="updateField(${index}, 'label', this.value)" class="flex-1 text-sm border p-1 rounded" placeholder="ชื่อช่อง (เช่น UID)">
+                        <select onchange="updateField(${index}, 'type', this.value)" class="text-sm border p-1 rounded bg-slate-50">
+                            <option value="text" ${field.type === 'text' ? 'selected' : ''}>ข้อความ (Text)</option>
+                            <option value="number" ${field.type === 'number' ? 'selected' : ''}>ตัวเลข (Number)</option>
+                            <option value="email" ${field.type === 'email' ? 'selected' : ''}>อีเมล (Email)</option>
+                        </select>
+                        <button onclick="removeFormField(${index})" class="text-red-400 hover:text-red-600 px-2"><i class="fas fa-times"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function saveItem() {
+            const name = document.getElementById('i-name').value;
+            const cat = document.getElementById('i-cat').value;
+            const img = document.getElementById('i-img').value;
+            const limit = document.getElementById('i-limit').value;
+
+            if(!name || !cat) return alert('กรุณากรอกชื่อและหมวดหมู่');
+
+            db.ref('items').push({
+                name, 
+                category: cat,
+                image: img || 'https://via.placeholder.com/150',
+                limitPerUser: limit,
+                formFields: currentFormFields // Save JSON structure
+            });
+            closeItemModal();
+        }
+
+        // --- TABS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active', 'bg-slate-800', 'text-white', 'border-r-4', 'border-blue-500'));
+            // Highlight logic implies clicking, handled by styles mostly
+            
+            let title = "ภาพรวมระบบ";
+            if(tabId === 'requests') title = "จัดการคำขอรับของ";
+            if(tabId === 'items') title = "คลังสินค้าและของรางวัล";
+            if(tabId === 'categories') title = "หมวดหมู่เกม";
+            document.getElementById('page-title').innerText = title;
         }
     </script>
 </body>
